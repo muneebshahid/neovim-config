@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -596,7 +596,7 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
+        rust_analyzer = {},
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
@@ -612,12 +612,11 @@ require('lazy').setup({
       --    :Mason
       --
       -- You can press `g?` for help in this menu.
-      local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, {
-        'lua_ls', -- Lua Language server
-        'stylua', -- Used to format Lua code
-        -- You can add other tools here that you want Mason to install
-      })
+      local ensure_installed = {
+        'lua-language-server',
+        'rust-analyzer',
+        'stylua',
+      }
 
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -788,26 +787,39 @@ require('lazy').setup({
     },
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+  { 'folke/tokyonight.nvim', priority = 1000 },
+  { 'catppuccin/nvim', name = 'catppuccin' },
+  { 'rose-pine/neovim', name = 'rose-pine' },
+  { 'rebelot/kanagawa.nvim' },
+  {
+    'Shatur/neovim-ayu',
     config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
+      require('ayu').setup({
+        overrides = {
+          LineNr = { fg = '#505050' },
         },
-      }
-
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      })
     end,
+  },
+  {
+    'config-colorscheme',
+    virtual = true,
+    priority = 1000,
+    config = function()
+      -- Change this to switch your theme:
+      -- 'tokyonight-night', 'catppuccin-mocha', 'rose-pine',
+      -- 'kanagawa', 'ayu-dark', 'ayu-mirage', 'ayu-light'
+      vim.cmd.colorscheme 'ayu-dark'
+    end,
+  },
+
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    branch = 'v3.x',
+    dependencies = { 'nvim-lua/plenary.nvim', 'nvim-tree/nvim-web-devicons', 'MunifTanjim/nui.nvim' },
+    keys = {
+      { '<leader>e', '<cmd>Neotree toggle<cr>', desc = 'File [E]xplorer' },
+    },
   },
 
   -- Highlight todo, notes, etc in comments
@@ -875,7 +887,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
