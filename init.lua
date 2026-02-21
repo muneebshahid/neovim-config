@@ -104,6 +104,16 @@ vim.o.number = true
 --  Experiment for yourself to see if you like it!
 vim.o.relativenumber = true
 
+-- Ensure newline at end of file on save
+vim.o.fixendofline = true
+
+-- Ctrl-e moves to end of line in insert mode
+vim.keymap.set('i', '<C-e>', '<End>')
+
+-- Smart j/k: move by display lines when no count, logical lines with count
+vim.keymap.set('n', 'j', function() return vim.v.count > 0 and 'j' or 'gj' end, { expr = true })
+vim.keymap.set('n', 'k', function() return vim.v.count > 0 and 'k' or 'gk' end, { expr = true })
+
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
 
@@ -155,6 +165,9 @@ vim.o.inccommand = 'split'
 
 -- Show which line your cursor is on
 vim.o.cursorline = true
+
+-- Show filename at the top of each window
+vim.o.winbar = '%f'
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.o.scrolloff = 10
@@ -602,7 +615,7 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
+        ts_ls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -614,7 +627,9 @@ require('lazy').setup({
       -- You can press `g?` for help in this menu.
       local ensure_installed = {
         'lua-language-server',
-        'rust-analyzer',
+        'typescript-language-server',
+        -- Using rustup's rust-analyzer instead of Mason's standalone build
+        -- (Mason's 0.3.2786-standalone has a cycle-panic bug)
         'stylua',
       }
 
@@ -749,7 +764,7 @@ require('lazy').setup({
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        preset = 'default',
+        preset = 'enter',
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -797,6 +812,9 @@ require('lazy').setup({
       require('ayu').setup({
         overrides = {
           LineNr = { fg = '#505050' },
+          LspReferenceText = { bg = '#3a3a4a' },
+          LspReferenceRead = { bg = '#3a3a4a' },
+          LspReferenceWrite = { bg = '#3a4a3a' },
         },
       })
     end,
@@ -814,11 +832,35 @@ require('lazy').setup({
   },
 
   {
+    'iamcco/markdown-preview.nvim',
+    ft = 'markdown',
+    build = 'cd app && npm install',
+    keys = {
+      { '<leader>mp', '<cmd>MarkdownPreviewToggle<cr>', desc = '[M]arkdown [P]review' },
+    },
+  },
+
+  {
+    'sindrets/diffview.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    keys = {
+      { '<leader>gd', '<cmd>DiffviewOpen<cr>', desc = '[G]it [D]iff view' },
+      { '<leader>gh', '<cmd>DiffviewFileHistory %<cr>', desc = '[G]it file [H]istory' },
+      { '<leader>gc', '<cmd>DiffviewClose<cr>', desc = '[G]it diff [C]lose' },
+    },
+  },
+
+  {
     'nvim-neo-tree/neo-tree.nvim',
     branch = 'v3.x',
     dependencies = { 'nvim-lua/plenary.nvim', 'nvim-tree/nvim-web-devicons', 'MunifTanjim/nui.nvim' },
     keys = {
       { '<leader>e', '<cmd>Neotree toggle<cr>', desc = 'File [E]xplorer' },
+    },
+    opts = {
+      filesystem = {
+        follow_current_file = { enabled = true },
+      },
     },
   },
 
@@ -885,7 +927,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
@@ -893,7 +935,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
